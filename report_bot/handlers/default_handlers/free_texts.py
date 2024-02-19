@@ -7,4 +7,4 @@ def free_texts(message):
     msg = f'Сейчас свободны: \n\n' \
           f'{free_authors}'
 
-    bot.send_message(message.from_user.id, msg)
+    bot.send_message(message.from_user.id, msg, parse_mode='HTML')

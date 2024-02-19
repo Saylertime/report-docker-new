@@ -177,17 +177,16 @@ def brief_is_free():
         all_briefs = []
         for row in values:
             try:
-                title = row[0]
-                brief = row[3]
+                title = str(row[0])
+                brief = str(row[3])
                 author = row[2]
                 money = str(row[6])
                 symbs = str(row[8])
                 print(symbs)
                 if brief and not author:
-                    temp_row = f"{title}\n" \
-                               f"{brief}\n" \
-                               f"Объем: {symbs} тыс. символов\n" \
-                               f"Гонорар: {money}\n\n"
+                    temp_row = f' <a href="{brief}">{title}</a>\n' \
+                               f'Объем: {symbs} тыс. символов\n' \
+                               f'Гонорар: {money}\n\n'
                     all_briefs.append(temp_row)
             except:
                 pass
