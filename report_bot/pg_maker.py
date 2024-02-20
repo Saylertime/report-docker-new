@@ -47,12 +47,13 @@ def check_db():
     cursor = conn.cursor()
     conn.autocommit = True
 
-    cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'authors');")
+    cursor.execute("DROP TABLE authors;")
     table_exists = cursor.fetchone()[0]
 
     if not table_exists:
         create_db()
         refresh_db()
+
         cursor.close()
         conn.close()
 
