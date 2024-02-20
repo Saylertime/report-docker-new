@@ -5,7 +5,10 @@ from pg_maker import all_authors
 def authors(message):
     msg = ''
     authors = all_authors()
-    for author in authors:
-        msg += f"{author[0]} — {author[1]}. В таблице: {author[2]}\n\n"
-    print(authors)
+    if authors:
+        for author in authors:
+            msg += f"{author[0]} — {author[1]}. В таблице: {author[2]}\n\n"
+        print(authors)
+    else:
+        msg = 'Что-то с базой данный ;('
     bot.send_message(message.from_user.id, msg)
