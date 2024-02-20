@@ -66,7 +66,7 @@ def refresh_db():
 
     insert_data_sql = """
         INSERT INTO authors (name, nickname, name_in_db)
-        VALUES (?, ?, ?)
+        VALUES (%s, %s, %s)
     """
 
     authors_data = [
