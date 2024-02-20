@@ -7,7 +7,7 @@ def start_message(message):
           f"/free_authors — Свободные авторы \n\n" \
           f"/free_texts — Свободные брифы \n\n" \
           f"/authors — Все авторы \n\n" \
-          f"/new_author — Добавить автора \n\n" \
+          f"/new_author — Обновить базу данных \n\n" \
           f"/money — Гонорары за месяц\n\n"
 
     bot.send_message(message.chat.id, msg)

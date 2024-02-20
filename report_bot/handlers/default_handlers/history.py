@@ -4,7 +4,7 @@ from utils.sheets import rep_name_and_month
 
 @bot.message_handler(commands=['history'])
 def history(message):
-    bot.send_message(message.from_user.id, "Введи имя автора 'Январь 2024'")
+    bot.send_message(message.from_user.id, "Введи имя автора с большой буквы, как в табличке")
     bot.set_state(message.from_user.id, state=OverallState.name)
 
 
