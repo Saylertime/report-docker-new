@@ -49,9 +49,8 @@ def check_db():
 
     cursor.execute("DROP TABLE authors;")
 
-    if not table_exists:
-        create_db()
-        refresh_db()
+    create_db()
+    refresh_db()
 
         cursor.close()
         conn.close()
