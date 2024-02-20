@@ -47,7 +47,10 @@ def check_db():
     cursor = conn.cursor()
     conn.autocommit = True
 
-    cursor.execute("DROP TABLE authors;")
+    try:
+        cursor.execute("DROP TABLE authors;")
+    except:
+        pass
 
     create_db()
     refresh_db()
