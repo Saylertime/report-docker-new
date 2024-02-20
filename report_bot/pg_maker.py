@@ -52,8 +52,8 @@ def check_db():
     create_db()
     refresh_db()
 
-        cursor.close()
-        conn.close()
+    cursor.close()
+    conn.close()
 
 
 def refresh_db():
