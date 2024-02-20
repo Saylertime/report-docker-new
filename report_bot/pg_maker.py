@@ -48,7 +48,6 @@ def check_db():
     conn.autocommit = True
 
     cursor.execute("DROP TABLE authors;")
-    table_exists = cursor.fetchone()[0]
 
     if not table_exists:
         create_db()
