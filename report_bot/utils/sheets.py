@@ -157,8 +157,7 @@ def who_is_free():
 
 
 def brief_is_free():
-    SAMPLE_RANGE_NAME = f"{current_month}!A2:J"
-    print(SAMPLE_RANGE_NAME)
+    SAMPLE_RANGE_NAME = f"{current_month()}!A2:J"
 
     try:
         service = build("sheets", "v4", credentials=creds)
