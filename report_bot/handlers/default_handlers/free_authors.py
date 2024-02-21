@@ -7,7 +7,7 @@ def free_authors(message):
     msg = 'Сейчас свободны: \n\n'
     for author in free_authors:
         msg += f"{author[1]} — {author[0]}\n"
-    bot.send_message(message.from_user.id, msg)
+    bot.send_message(message.chat.id, msg)
 
 
 

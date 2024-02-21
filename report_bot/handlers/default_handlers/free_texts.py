@@ -4,7 +4,10 @@ from utils.sheets import brief_is_free
 @bot.message_handler(commands=['free_texts'])
 def free_texts(message):
     free_authors = brief_is_free()
-    msg = f'Сейчас свободны: \n\n' \
-          f'{free_authors}'
+    if free_authors:
+        msg = f'Сейчас свободны: \n\n' \
+              f'{free_authors}'
+    else:
+        msg = 'Ох, все такие занятые у нас, я прям не могу!'
 
-    bot.send_message(message.from_user.id, msg, parse_mode='HTML')
+    bot.send_message(message.chat.id, msg, parse_mode='HTML')

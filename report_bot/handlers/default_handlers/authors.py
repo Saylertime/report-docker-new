@@ -11,4 +11,4 @@ def authors(message):
         print(authors)
     else:
         msg = 'Что-то с базой данный ;('
-    bot.send_message(message.from_user.id, msg)
+    bot.send_message(message.chat.id, msg)

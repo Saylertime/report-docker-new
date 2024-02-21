@@ -4,6 +4,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from pg_maker import all_authors
+from utils.calendar import current_month
 import os
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
@@ -64,7 +65,7 @@ def rep_month(month):
     return msg
 
   except HttpError as err:
-    return str(err)
+    return str("Бот приболел. Немедленно сообщите об этом Лехе!")
 
 
 def rep_name_and_month(name, month='Январь 2024'):
@@ -89,7 +90,7 @@ def rep_name_and_month(name, month='Январь 2024'):
         dct_texts = dict()
         for row in values:
             try:
-                title = f"{row[0]} {row[1]}"
+                title = f"{row[0]} — {row[6]} руб. {row[1]}"
                 money = int(row[6])
                 if name == row[2]:
                     if name in dct or name in dct_texts:
@@ -114,11 +115,11 @@ def rep_name_and_month(name, month='Январь 2024'):
 
     except HttpError as err:
         print(err)
-        return str(err)
+        return str("Что-то неправильно вводишь!")
 
 
 def who_is_free():
-    SAMPLE_RANGE_NAME = "Февраль 2024!A2:C"
+    SAMPLE_RANGE_NAME = f"{current_month()}!A2:C"
 
     try:
         service = build("sheets", "v4", credentials=creds)
@@ -151,12 +152,12 @@ def who_is_free():
 
     except HttpError as err:
         print(err)
-        return str(err)
+        return str("Бот приболел. Немедленно сообщите об этом Лехе!")
 
 
 
 def brief_is_free():
-    SAMPLE_RANGE_NAME = "Февраль 2024!A2:J"
+    SAMPLE_RANGE_NAME = f"{current_month}!A2:J"
     print(SAMPLE_RANGE_NAME)
 
     try:
@@ -199,11 +200,7 @@ def brief_is_free():
 
     except HttpError as err:
         print(err)
-        return str(err)
-
-
-
-
+        return str("Бот приболел. Немедленно сообщите об этом Лехе!")
 
 
 def stats_for_month(month):
@@ -223,43 +220,41 @@ def stats_for_month(month):
             print("No data found.")
             return
 
-
-        all_symbs = 0
-        all_texts = 0
-        seo_count = 0
-        seo_symbs = 0
-        plain_count = 0
-        plain_symbs = 0
+        done, in_work, all_texts, seo, simple, review, test = 0, 0, 0, 0, 0, 0, 0
         for row in values:
             try:
-                symbols = row[4]
-                type = row[5]
+                title = row[0]
                 link = row[1]
-                if link:
-                    print(type)
+                brief = row[3]
+                type = row[5]
+
+                seo += 1 if type == 'СЕО' else 0
+                simple += 1 if type == 'Простая' or row[5] == 'Новость' else 0
+                review += 1 if type == 'Обзор' else 0
+                test += 1 if type == 'Тест' else 0
+
+                if title and brief:
                     all_texts += 1
-                    all_symbs += float(symbols)
-                    if type == 'СЕО':
-                        seo_count += 1
-                        seo_symbs += symbols
-                    if type == 'Простая' or type == 'Новость':
-                        plain_count += 1
-                        plain_symbs += symbols
+
+                    if link:
+                        done += 1
+                    else:
+                        in_work += 1
             except:
                 pass
 
-
-        msg = f'Всего текстов за месяц: {all_texts} \n' \
-              f'Всего символов за все тексты: {all_symbs}\n ' \
-              f'СЕО ТЕКСТОВ — {seo_count} и {seo_symbs} символов\n' \
-              f'ПРОСТЫХ ТЕКСТОВ — {plain_count} и {plain_symbs} символов'
-
+        msg = f'Всего текстов за месяц: {all_texts}\n' \
+              f'Уже готовы: {done}\n' \
+              f'Сейчас в работе: {in_work}\n\n' \
+              f'Простых — {simple} шт\n' \
+              f'СЕО — {seo} шт\n' \
+              f'Тестов — {test}\n' \
+              f'Обзоров — {review}\n'
         return msg
-
 
     except HttpError as err:
         print(err)
-        return str(err)
+        return str("Что-то неправильно ввели. Делайте нормально!")
 
 
 

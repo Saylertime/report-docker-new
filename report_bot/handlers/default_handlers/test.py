@@ -8,4 +8,4 @@ def test(message):
     for author in authors:
         msg += f"{author[0]} — {author[1]}\n\n"
     print(authors)
-    bot.send_message(message.from_user.id, msg)
+    bot.send_message(message.chat.id, msg)

@@ -6,3 +6,4 @@ class OverallState(StatesGroup):
     second = State()
     name = State()
     new_author = State()
+    stats = State()
