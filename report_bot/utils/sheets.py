@@ -157,6 +157,7 @@ def who_is_free():
         result = [author for author, count in count_dict.items() if count == 1]
         nicknames_2 = [nickname for nickname in all_nicknames_2 if nickname not in all_nicknames]
 
+        nicknames_2 = [nickname for nickname in all_nicknames_2 if any(author in nickname for author in result)]
 
         return all_nicknames, nicknames_2
 
