@@ -140,18 +140,25 @@ def who_is_free():
             return
 
         all_nicknames = [(i[1], i[2]) for i in all_authors()]
+        all_nicknames_2 = [(i[1], i[2]) for i in all_authors()]
+        count_dict = defaultdict(int)
         for row in values:
             try:
                 author = str(row[2])
                 link = row[1]
                 if author and not link:
+                    count_dict[author] += 1
                     for nickname_tuple in all_nicknames:
                         if author in nickname_tuple:
                             all_nicknames.remove(nickname_tuple)
             except:
                 pass
 
-        return all_nicknames
+        result = [author for author, count in count_dict.items() if count == 1]
+        nicknames_2 = [nickname for nickname in all_nicknames_2 if nickname not in all_nicknames]
+
+
+        return all_nicknames, nicknames_2
 
     except HttpError as err:
         print(err)
