@@ -10,5 +10,5 @@ def authors(message):
             msg += f"{author[0]} — {author[1]}. В таблице: {author[2]}\n\n"
         print(authors)
     else:
-        msg = 'Что-то с базой данный ;('
+        msg = 'Что-то с базой данных ;('
     bot.send_message(message.chat.id, msg)

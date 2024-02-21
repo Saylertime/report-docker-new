@@ -8,6 +8,6 @@ def free_texts(message):
         msg = f'Сейчас свободны: \n\n' \
               f'{free_authors}'
     else:
-        msg = 'Ох, все такие занятые у нас, я прям не могу!'
+        msg = 'Ого, всё раздали! Чмаффки <333!'
 
-    bot.send_message(message.chat.id, msg, parse_mode='HTML')
+    bot.send_message(message.chat.id, msg, parse_mode='Markdown')

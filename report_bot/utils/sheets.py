@@ -5,6 +5,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from pg_maker import all_authors
 from utils.calendar import current_month
+from collections import defaultdict
 import os
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
@@ -92,11 +93,13 @@ def rep_name_and_month(name, month='Январь 2024'):
             try:
                 title = f"{row[0]} — {row[6]} руб. {row[1]}"
                 money = int(row[6])
+                link = row[1]
                 if name == row[2]:
-                    if name in dct or name in dct_texts:
-                        value_money, current_count = dct[name]
-                        dct_texts[name].append(title)
-                        dct[name] = (value_money + money, current_count + 1)
+                    if (name in dct or name in dct_texts):
+                        if link:
+                            value_money, current_count = dct[name]
+                            dct_texts[name].append(title)
+                            dct[name] = (value_money + money, current_count + 1)
                     else:
                         dct[name] = (money, 1)
                         dct_texts[name] = [title]
@@ -156,6 +159,8 @@ def who_is_free():
 
 
 
+
+
 def brief_is_free():
     SAMPLE_RANGE_NAME = f"{current_month()}!A2:J"
 
@@ -182,9 +187,8 @@ def brief_is_free():
                 author = row[2]
                 money = str(row[6])
                 symbs = str(row[8])
-                print(symbs)
                 if brief and not author:
-                    temp_row = f' <a href="{brief}">{title}</a>\n' \
+                    temp_row = f'[{title}]({brief})\n' \
                                f'Объем: {symbs} тыс. символов\n' \
                                f'Гонорар: {money}\n\n'
                     all_briefs.append(temp_row)

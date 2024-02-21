@@ -11,9 +11,13 @@ def history(message):
 
 @bot.message_handler(state=OverallState.name)
 def answer(message):
-    split_message = message.text.split(", ")
-    name = split_message[0]
-    current_month = split_message[1]
-    msg = rep_name_and_month(name=name, month=current_month)
-    bot.send_message(message.chat.id, msg)
-    bot.delete_state(message.chat.id)
+    try:
+        split_message = message.text.split(", ")
+        name = split_message[0]
+        current_month = split_message[1]
+        msg = rep_name_and_month(name=name, month=current_month)
+        bot.send_message(message.chat.id, msg)
+    except:
+        bot.send_message(message.chat.id, 'Введи нормально :(')
+    finally:
+        bot.delete_state(message.chat.id)
