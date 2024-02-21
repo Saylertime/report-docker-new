@@ -1,4 +1,5 @@
 import os
+import openai
 from dotenv import load_dotenv, find_dotenv
 
 if not find_dotenv():
@@ -7,6 +8,7 @@ else:
     load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+openai.api_key = os.getenv("CHATGPT_API_KEY")
 
 DEFAULT_COMMANDS = (
     ("start", "Запустить бота"),
