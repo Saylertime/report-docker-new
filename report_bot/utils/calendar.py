@@ -19,7 +19,6 @@ def current_month():
     current_date = datetime.now()
     month_eng = current_date.strftime("%B")
     now = f"{months_dict[month_eng]} {current_date.year}"
-    print(now)
     return now
 
 current_month()

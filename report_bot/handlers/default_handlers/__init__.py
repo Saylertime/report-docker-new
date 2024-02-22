@@ -5,6 +5,7 @@ from . import authors
 from . import new_author
 from . import free_authors
 from . import free_texts
+from . import all_texts
 from . import test
 from . import stats_month
 from . import echo

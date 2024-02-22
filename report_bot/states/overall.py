@@ -7,3 +7,4 @@ class OverallState(StatesGroup):
     name = State()
     new_author = State()
     stats = State()
+    all_texts = State()

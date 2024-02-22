@@ -155,7 +155,6 @@ def who_is_free():
                 pass
 
         result = [author for author, count in count_dict.items() if count == 1]
-        nicknames_2 = [nickname for nickname in all_nicknames_2 if nickname not in all_nicknames]
 
         nicknames_2 = [nickname for nickname in all_nicknames_2 if any(author in nickname for author in result)]
 
@@ -266,6 +265,69 @@ def stats_for_month(month):
     except HttpError as err:
         print(err)
         return str("Что-то неправильно ввели. Делайте нормально!")
+
+
+
+
+
+def all_texts_of_author(name):
+    all_months = ["Ноябрь 2023", "Декабрь 2023", "Январь 2024", "Февраль 2024"]
+    temp = ""
+
+    for month in all_months:
+        SAMPLE_RANGE_NAME = f"{month}!A2:G"
+
+        try:
+            service = build("sheets", "v4", credentials=creds)
+
+            sheet = service.spreadsheets()
+            result = (
+                sheet.values()
+                .get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=SAMPLE_RANGE_NAME)
+                .execute()
+            )
+            values = result.get("values", [])
+
+            if not values:
+                print("No data found.")
+                return
+
+            msg_texts = ''
+            for row in values:
+                try:
+                    title = f"{row[0]} — {row[1]}"
+                    link = row[1]
+                    if name == row[2] and link:
+                        msg_texts += f"\n{title}\n"
+
+
+                except:
+                    pass
+
+            temp += msg_texts
+
+        except HttpError as err:
+            print(err)
+            return str("Что-то неправильно вводишь!")
+
+    temp_file = create_and_return_file(name, temp)
+    return temp_file
+
+
+def create_and_return_file(name, content):
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+    temp_directory = os.path.join(current_directory, "report_bot", "temp")
+    os.makedirs(temp_directory, exist_ok=True)
+    file_path = os.path.join(temp_directory, f"{name}.txt")
+    with open(file_path, "a") as file:
+        file.write(content)
+    return file_path
+
+
+
+
+
+
 
 
 
