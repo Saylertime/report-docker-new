@@ -12,9 +12,12 @@ def all_texts(message):
 
 @bot.message_handler(state=OverallState.all_texts)
 def answer(message):
-    all_texts = all_texts_of_author(message.text)
-    if all_texts:
-        with open(all_texts, 'rb') as file:
+    all_texts_eldo, all_texts_mvideo = all_texts_of_author(message.text)
+    if all_texts_eldo:
+        with open(all_texts_eldo, 'rb') as file:
+            bot.send_document(message.chat.id, file)
+    if all_texts_mvideo:
+        with open(all_texts_mvideo, 'rb') as file:
             bot.send_document(message.chat.id, file)
     else:
         msg = "Ничего не нашел по нему( Точно имя правильное?"

@@ -187,26 +187,34 @@ def brief_is_free():
             return
 
         all_briefs = []
+        flag_mvideo = False
+
         for row in values:
+            if "МВИДЕО" in str(row):
+                flag_mvideo = True
             try:
                 title = str(row[0])
                 brief = str(row[3])
                 author = row[2]
                 money = str(row[6])
                 symbs = str(row[8])
+
                 if brief and not author:
                     temp_row = f'[{title}]({brief})\n' \
                                f'Объем: {symbs} тыс. символов\n' \
+                               f'Для блога: {"Мвидео" if flag_mvideo else "Эльдорадо"}\n' \
                                f'Гонорар: {money}\n\n'
                     all_briefs.append(temp_row)
-            except:
-                pass
+
+            except Exception as e:
+                print(f"Error: {e}")
 
         msg = ''
         for num, brief in enumerate(all_briefs, start=1):
             msg += f"{num}. {brief}"
 
         return msg
+
 
     except HttpError as err:
         print(err)
@@ -272,7 +280,9 @@ def stats_for_month(month):
 
 def all_texts_of_author(name):
     all_months = ["Ноябрь 2023", "Декабрь 2023", "Январь 2024", "Февраль 2024"]
-    temp = ""
+    temp_eldo = ""
+    temp_mvideo = ""
+    recording_mvideo = False
 
     for month in all_months:
         SAMPLE_RANGE_NAME = f"{month}!A2:G"
@@ -292,37 +302,48 @@ def all_texts_of_author(name):
                 print("No data found.")
                 return
 
-            msg_texts = ''
+            msg_texts_eldo = ''
+            msg_texts_mvideo = ''
             for row in values:
+                if 'МВИДЕО' in str(row):
+                    recording_mvideo = True
                 try:
                     title = f"{row[0]} — {row[1]}"
                     link = row[1]
                     if name == row[2] and link:
-                        msg_texts += f"\n{title}\n"
-
-
+                        if recording_mvideo:
+                            msg_texts_mvideo += f"\n{title}\n"
+                        else:
+                            msg_texts_eldo += f"\n{title}\n"
                 except:
                     pass
 
-            temp += msg_texts
+            temp_eldo += msg_texts_eldo
+            temp_mvideo += msg_texts_mvideo
 
         except HttpError as err:
             print(err)
             return str("Что-то неправильно вводишь!")
 
-    temp_file = create_and_return_file(name, temp)
-    return temp_file
+        recording_mvideo = False
+
+    temp_file_eldo = create_and_return_file(name, 'eldo', temp_eldo)
+    temp_file_mvideo = create_and_return_file(name, 'mvideo', temp_mvideo)
+
+    return temp_file_eldo, temp_file_mvideo
 
 
-def create_and_return_file(name, content):
+def create_and_return_file(name, blog, content):
     current_directory = os.path.dirname(os.path.abspath(__file__))
     temp_directory = os.path.join(current_directory, "report_bot", "temp")
     os.makedirs(temp_directory, exist_ok=True)
-    file_path = os.path.join(temp_directory, f"{name}.txt")
+    file_path = os.path.join(temp_directory, f"{name}_{blog}.txt")
     with open(file_path, "a") as file:
-        file.write(content)
-    return file_path
-
+        if content:
+            file.write(content)
+            return file_path
+        else:
+            return ''
 
 
 
