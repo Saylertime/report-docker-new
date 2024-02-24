@@ -1,71 +1,64 @@
 import psycopg2
+from config_data import config
+
+dbname = config.DB_NAME
+user = config.DB_USER
+password = config.DB_PASSWORD
+host = config.DB_HOST
+
+
+def connect_to_db():
+    conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
+    cursor = conn.cursor()
+    conn.autocommit = True
+    return conn, cursor
+
+def close_db_connection(conn, cursor):
+    cursor.close()
+    conn.close()
 
 
 def add_author(name, nickname, name_in_db, about='', phone=''):
-    create_db()
+    conn, cursor = connect_to_db()
 
-    conn = psycopg2.connect(dbname="postgres", user="postgres", password="postgres", host="postgres")
-    cursor = conn.cursor()
-    conn.autocommit = True
-
-    sql = f"INSERT INTO authors (name, nickname, name_in_db, about, phone) " \
+    sql = f"INSERT INTO public.authors (name, nickname, name_in_db, about, phone) " \
           f"VALUES ('{name}', '{nickname}', '{name_in_db}', '{about}', '{phone}')"
 
     cursor.execute(sql)
     print(f"{nickname} добавлен")
-    cursor.close()
-    conn.close()
+
+    close_db_connection(conn, cursor)
 
 def all_authors():
-    create_db()
-    conn = psycopg2.connect(dbname="postgres", user="postgres", password="postgres", host="postgres")
-    cursor = conn.cursor()
-    conn.autocommit = True
+    conn, cursor = connect_to_db()
 
-    sql = "SELECT name, nickname, name_in_db FROM authors"
+    sql = "SELECT name, nickname, name_in_db FROM public.authors"
 
     cursor.execute(sql)
     authors = cursor.fetchall()
-    cursor.close()
-    conn.close()
+
+    close_db_connection(conn, cursor)
     return authors
 
-
 def create_db():
-    conn = psycopg2.connect(dbname="postgres", user="postgres", password="postgres", host="postgres")
-    cursor = conn.cursor()
-    conn.autocommit = True
+    conn, cursor = connect_to_db()
 
-    sql = 'CREATE TABLE IF NOT EXISTS authors (name VARCHAR, nickname VARCHAR, name_in_db VARCHAR, phone VARCHAR, about VARCHAR);'
+    sql = 'CREATE TABLE IF NOT EXISTS public.authors (name VARCHAR, nickname VARCHAR, name_in_db VARCHAR, phone VARCHAR, about VARCHAR);'
     cursor.execute(sql)
-    cursor.close()
-    conn.close()
+    close_db_connection(conn, cursor)
 
-
-def check_db():
-    conn = psycopg2.connect(dbname="postgres", user="postgres", password="postgres", host="postgres")
-    cursor = conn.cursor()
-    conn.autocommit = True
+def refresh_db():
+    conn, cursor = connect_to_db()
 
     try:
-        cursor.execute("DROP TABLE authors;")
+        cursor.execute("DROP TABLE public.authors;")
     except:
         pass
 
     create_db()
-    refresh_db()
-
-    cursor.close()
-    conn.close()
-
-
-def refresh_db():
-    conn = psycopg2.connect(dbname="postgres", user="postgres", password="postgres", host="postgres")
-    cursor = conn.cursor()
-    conn.autocommit = True
 
     insert_data_sql = """
-        INSERT INTO authors (name, nickname, name_in_db)
+        INSERT INTO public.authors (name, nickname, name_in_db)
         VALUES (%s, %s, %s)
     """
 
@@ -95,6 +88,4 @@ def refresh_db():
     ]
 
     cursor.executemany(insert_data_sql, authors_data)
-    cursor.close()
-    conn.close()
-
+    close_db_connection(conn, cursor)

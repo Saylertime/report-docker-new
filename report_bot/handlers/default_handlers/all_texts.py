@@ -19,7 +19,7 @@ def answer(message):
     if all_texts_mvideo:
         with open(all_texts_mvideo, 'rb') as file:
             bot.send_document(message.chat.id, file)
-    else:
+    if not all_texts_eldo and not all_texts_mvideo:
         msg = "Ничего не нашел по нему( Точно имя правильное?"
         bot.send_message(message.chat.id, msg)
     bot.delete_state(message.chat.id)

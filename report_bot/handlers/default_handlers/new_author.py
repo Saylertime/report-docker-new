@@ -1,11 +1,11 @@
 from loader import bot
 from states.overall import OverallState
-from pg_maker import add_author, check_db
+from pg_maker import add_author, refresh_db
 
 
 @bot.message_handler(commands=['new_author'])
 def new_author(message):
-    check_db()
+    refresh_db()
     bot.send_message(message.chat.id, "Обновились")
 
     # bot.send_message(message.from_user.id, "Введи имя и фамилию автора, ник и то, как помечаем его в таблице. "
