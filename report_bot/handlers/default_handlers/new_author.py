@@ -26,3 +26,6 @@ def add_author_to_db(message):
         bot.send_message(message.from_user.id, f"Что-то не получилось. \n"
                                                f"Попробовать еще раз — /new_author\n"
                                                f"Посмотреть всех — /test")
+    finally:
+        bot.delete_state(message.chat.id)
+
