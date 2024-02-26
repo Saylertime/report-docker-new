@@ -3,10 +3,11 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from pg_maker import all_authors
-from utils.calendar import current_month
+from pg_maker import all_authors, find_author
+from utils.calendar import current_month, current_day
 from collections import defaultdict
 import os
+
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 SAMPLE_SPREADSHEET_ID = "14rfetnaiqgiT3o0TsLC-yi3EICobIH5rNljilhDS70M"
@@ -222,7 +223,7 @@ def brief_is_free():
 
 
 def stats_for_month(month):
-    SAMPLE_RANGE_NAME = f"{month}!A2:G"
+    SAMPLE_RANGE_NAME = f"{month}!A2:I"
     try:
         service = build("sheets", "v4", credentials=creds)
 
@@ -239,12 +240,15 @@ def stats_for_month(month):
             return
 
         done, in_work, all_texts, seo, simple, review, test = 0, 0, 0, 0, 0, 0, 0
+        deadline_today = ''
         for row in values:
             try:
                 title = row[0]
                 link = row[1]
                 brief = row[3]
                 type = row[5]
+                deadline = row[7]
+                author = row[2]
 
                 seo += 1 if type == 'СЕО' else 0
                 simple += 1 if type == 'Простая' or row[5] == 'Новость' else 0
@@ -258,6 +262,9 @@ def stats_for_month(month):
                         done += 1
                     else:
                         in_work += 1
+
+                if deadline and title and brief:
+                    deadline_today += f"{title} — {author} — {deadline}\n"
             except:
                 pass
 
@@ -267,7 +274,8 @@ def stats_for_month(month):
               f'Простых — {simple} шт\n' \
               f'СЕО — {seo} шт\n' \
               f'Тестов — {test}\n' \
-              f'Обзоров — {review}\n'
+              f'Обзоров — {review}\n\n\n' \
+              f'Дедлайны: {deadline_today}'
         return msg
 
     except HttpError as err:
@@ -275,6 +283,62 @@ def stats_for_month(month):
         return str("Что-то неправильно ввели. Делайте нормально!")
 
 
+def in_work_today():
+    SAMPLE_RANGE_NAME = f"{current_month()}!A2:I"
+    today, tomorrow = current_day()
+    try:
+        service = build("sheets", "v4", credentials=creds)
+
+        sheet = service.spreadsheets()
+        result = (
+            sheet.values()
+            .get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=SAMPLE_RANGE_NAME)
+            .execute()
+        )
+        values = result.get("values", [])
+
+        if not values:
+            print("No data found.")
+            return
+
+        done, in_work, all_texts = 0, 0, 0
+        deadline_today = ''
+        deadline_tomorrow = ''
+        for row in values:
+            try:
+                title = row[0]
+                link = row[1]
+                brief = row[3]
+                deadline = row[7]
+                author = row[2]
+
+                if title and brief and title != "Тема текста" and title != "МВИДЕО":
+                    all_texts += 1
+
+                    if link:
+                        done += 1
+                    else:
+                        in_work += 1
+
+                if deadline and title and brief and not link:
+                    if deadline == today:
+                        deadline_today += f"- <a href='{brief}'>{title}</a> — {author} {find_author(author)[0]}\n"
+                    if deadline == tomorrow:
+                        deadline_tomorrow += f"- <a href='{brief}'>{title}</a> — {author} {find_author(author)[0]}\n"
+            except:
+                pass
+
+        msg = f'Всего текстов за месяц: {all_texts}\n' \
+              f'Уже готовы: {done}\n' \
+              f'Сейчас в работе: {in_work}\n\n' \
+              f'<b>Сегодня должны сдать:</b> \n{deadline_today}\n\n' \
+              f'<b>Завтра должны сдать:</b> \n{deadline_tomorrow}\n\n'
+        return msg
+
+
+    except HttpError as err:
+        print(err)
+        return str("Что-то неправильно ввели. Делайте нормально!")
 
 
 

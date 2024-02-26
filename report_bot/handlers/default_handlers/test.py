@@ -1,7 +1,8 @@
 # import requests
 # from loader import bot
 # import os
-
+# import openai
+#
 # openai.api_key = os.getenv("CHATGPT_API_KEY")
 #
 # @bot.message_handler(commands=['test'])
@@ -13,14 +14,13 @@
 #     user_input = message.text
 #
 #     proxy = {
-#        "http": "http://your_proxy_address",
-#        "https": "https://your_proxy_address",
+#         'socks5': 'socks5://localhost:8080',
 #     }
 #
 #     response = requests.post(
-#        "https://api.openai.com/v1/engines/gpt-3.5-turbo/completions",
+#        "https://api.openai.com/v1/engines/gpt-3.5-turbo-instruct/completions",
 #        headers={"Authorization": f"Bearer {os.getenv('CHATGPT_API_KEY')}"},
-#        json={"prompt": user_input, "max_tokens": 1000},
+#        json={"prompt": user_input, "max_tokens": 2000},
 #        proxies=proxy
 #     )
 #

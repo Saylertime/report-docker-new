@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 months_dict = {
     "January": "Январь",
@@ -21,5 +21,10 @@ def current_month():
     now = f"{months_dict[month_eng]} {current_date.year}"
     return now
 
-current_month()
+def current_day():
+    t = datetime.now()
+    today = t.strftime('%d.%m')
+    tom = t + timedelta(days=1)
+    tomorrow = tom.strftime('%d.%m')
+    return today, tomorrow
 

@@ -89,3 +89,14 @@ def refresh_db():
 
     cursor.executemany(insert_data_sql, authors_data)
     close_db_connection(conn, cursor)
+
+def find_author(name):
+    conn, cursor = connect_to_db()
+
+    sql = f"SELECT nickname FROM public.authors WHERE name_in_db = '{name}'"
+
+    cursor.execute(sql)
+    author = cursor.fetchone()
+
+    close_db_connection(conn, cursor)
+    return author

@@ -6,6 +6,7 @@ def start_message(message):
     msg = f"Ультимативный бот для сотрудников ГейГуру \n\n" \
           f"/free_authors — Свободные авторы \n\n" \
           f"/free_texts — Свободные брифы \n\n" \
+          f"/deadlines — Дедлайны \n\n" \
           f"/history — Инфа по автору за выбранный месяц \n\n" \
           f"/all_texts — Все тексты автора за всё время \n\n" \
           f"/new_author — Обновить базу данных \n\n" \
