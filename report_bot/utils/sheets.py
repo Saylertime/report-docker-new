@@ -27,24 +27,35 @@ if not creds or not creds.valid:
     with open("token.json", "w") as token:
         token.write(creds.to_json())
 
+def get_data_from_sheet(month):
+    SAMPLE_RANGE_NAME = f"{month}!A2:I"
+
+    try:
+        service = build("sheets", "v4", credentials=creds)
+
+        sheet = service.spreadsheets()
+        result = (
+            sheet.values()
+            .get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=SAMPLE_RANGE_NAME)
+            .execute()
+        )
+        values = result.get("values", [])
+
+        if not values:
+            print("No data found.")
+            return None
+
+        return values
+
+    except HttpError as err:
+        print(err)
+        return None
+
 
 def rep_month(month):
-  SAMPLE_RANGE_NAME = f"{month}!A2:G"
-
-  try:
-    service = build("sheets", "v4", credentials=creds)
-
-    sheet = service.spreadsheets()
-    result = (
-        sheet.values()
-        .get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=SAMPLE_RANGE_NAME)
-        .execute()
-    )
-    values = result.get("values", [])
-
+    values = get_data_from_sheet(month)
     if not values:
-      print("No data found.")
-      return
+        return
 
     dct = dict()
 
@@ -66,280 +77,187 @@ def rep_month(month):
         msg += f"{author} — {summa[0]} руб.\nТекстов за месяц — {summa[1]}\n\n"
     return msg
 
-  except HttpError as err:
-    return str("Бот приболел. Немедленно сообщите об этом Лехе!")
-
 
 def rep_name_and_month(name, month='Январь 2024'):
-    SAMPLE_RANGE_NAME = f"{month}!A2:G"
+    values = get_data_from_sheet(month)
+    if not values:
+        return
 
-    try:
-        service = build("sheets", "v4", credentials=creds)
+    dct = dict()
+    dct_texts = dict()
+    for row in values:
+        try:
+            title = f"{row[0]} — {row[6]} руб. {row[1]}"
+            money = int(row[6])
+            link = row[1]
+            if name == row[2]:
+                if (name in dct or name in dct_texts):
+                    if link:
+                        value_money, current_count = dct[name]
+                        dct_texts[name].append(title)
+                        dct[name] = (value_money + money, current_count + 1)
+                else:
+                    dct[name] = (money, 1)
+                    dct_texts[name] = [title]
+        except:
+            pass
+    msg = ''
+    sorted_dct = sorted(dct.items(), key=lambda item: item[1][0], reverse=True)
+    for author, summa in sorted_dct:
+        msg += f"Гонорар за {month} — {summa[0]} руб.\nТекстов за месяц — {summa[1]}\n\nВсе тексты: \n"
 
-        sheet = service.spreadsheets()
-        result = (
-            sheet.values()
-            .get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=SAMPLE_RANGE_NAME)
-            .execute()
-        )
-        values = result.get("values", [])
-
-        if not values:
-            print("No data found.")
-            return
-
-        dct = dict()
-        dct_texts = dict()
-        for row in values:
-            try:
-                title = f"{row[0]} — {row[6]} руб. {row[1]}"
-                money = int(row[6])
-                link = row[1]
-                if name == row[2]:
-                    if (name in dct or name in dct_texts):
-                        if link:
-                            value_money, current_count = dct[name]
-                            dct_texts[name].append(title)
-                            dct[name] = (value_money + money, current_count + 1)
-                    else:
-                        dct[name] = (money, 1)
-                        dct_texts[name] = [title]
-            except:
-                pass
-        msg = ''
-        sorted_dct = sorted(dct.items(), key=lambda item: item[1][0], reverse=True)
-        for author, summa in sorted_dct:
-            msg += f"Гонорар за {month} — {summa[0]} руб.\nТекстов за месяц — {summa[1]}\n\nВсе тексты: \n"
-
-        msg_texts = ''
-        for title in dct_texts[name]:
-            msg_texts += f"\n— {title}\n"
-        msg += msg_texts
-        return msg
-
-    except HttpError as err:
-        print(err)
-        return str("Что-то неправильно вводишь!")
+    msg_texts = ''
+    for title in dct_texts[name]:
+        msg_texts += f"\n— {title}\n"
+    msg += msg_texts
+    return msg
 
 
 def who_is_free():
-    SAMPLE_RANGE_NAME = f"{current_month()}!A2:C"
+    values = get_data_from_sheet(current_month())
+    if not values:
+        return
 
-    try:
-        service = build("sheets", "v4", credentials=creds)
+    all_nicknames = [(i[1], i[2]) for i in all_authors()]
+    all_nicknames_2 = [(i[1], i[2]) for i in all_authors()]
+    count_dict = defaultdict(int)
+    for row in values:
+        try:
+            author = str(row[2])
+            link = row[1]
+            if author and not link:
+                count_dict[author] += 1
+                for nickname_tuple in all_nicknames:
+                    if author in nickname_tuple:
+                        all_nicknames.remove(nickname_tuple)
+        except:
+            pass
 
-        sheet = service.spreadsheets()
-        result = (
-            sheet.values()
-            .get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=SAMPLE_RANGE_NAME)
-            .execute()
-        )
-        values = result.get("values", [])
+    result = [author for author, count in count_dict.items() if count == 1]
 
-        if not values:
-            print("No data found.")
-            return
+    nicknames_2 = [nickname for nickname in all_nicknames_2 if any(author in nickname for author in result)]
 
-        all_nicknames = [(i[1], i[2]) for i in all_authors()]
-        all_nicknames_2 = [(i[1], i[2]) for i in all_authors()]
-        count_dict = defaultdict(int)
-        for row in values:
-            try:
-                author = str(row[2])
-                link = row[1]
-                if author and not link:
-                    count_dict[author] += 1
-                    for nickname_tuple in all_nicknames:
-                        if author in nickname_tuple:
-                            all_nicknames.remove(nickname_tuple)
-            except:
-                pass
-
-        result = [author for author, count in count_dict.items() if count == 1]
-
-        nicknames_2 = [nickname for nickname in all_nicknames_2 if any(author in nickname for author in result)]
-
-        return all_nicknames, nicknames_2
-
-    except HttpError as err:
-        print(err)
-        return str("Бот приболел. Немедленно сообщите об этом Лехе!")
-
-
-
+    return all_nicknames, nicknames_2
 
 
 def brief_is_free():
-    SAMPLE_RANGE_NAME = f"{current_month()}!A2:J"
+    values = get_data_from_sheet(current_month())
+    if not values:
+        return
 
-    try:
-        service = build("sheets", "v4", credentials=creds)
+    all_briefs = []
+    flag_mvideo = False
 
-        sheet = service.spreadsheets()
-        result = (
-            sheet.values()
-            .get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=SAMPLE_RANGE_NAME)
-            .execute()
-        )
-        values = result.get("values", [])
+    for row in values:
+        if "МВИДЕО" in str(row):
+            flag_mvideo = True
+        try:
+            title = str(row[0])
+            brief = str(row[3])
+            author = row[2]
+            money = str(row[6])
+            symbs = str(row[8])
 
-        if not values:
-            print("No data found.")
-            return
+            if brief and not author:
+                temp_row = f'[{title}]({brief})\n' \
+                           f'Объем: {symbs} тыс. символов\n' \
+                           f'Для блога: {"Мвидео" if flag_mvideo else "Эльдорадо"}\n' \
+                           f'Гонорар: {money}\n\n'
+                all_briefs.append(temp_row)
 
-        all_briefs = []
-        flag_mvideo = False
+        except Exception as e:
+            print(f"Error: {e}")
 
-        for row in values:
-            if "МВИДЕО" in str(row):
-                flag_mvideo = True
-            try:
-                title = str(row[0])
-                brief = str(row[3])
-                author = row[2]
-                money = str(row[6])
-                symbs = str(row[8])
+    msg = ''
+    for num, brief in enumerate(all_briefs, start=1):
+        msg += f"{num}. {brief}"
 
-                if brief and not author:
-                    temp_row = f'[{title}]({brief})\n' \
-                               f'Объем: {symbs} тыс. символов\n' \
-                               f'Для блога: {"Мвидео" if flag_mvideo else "Эльдорадо"}\n' \
-                               f'Гонорар: {money}\n\n'
-                    all_briefs.append(temp_row)
-
-            except Exception as e:
-                print(f"Error: {e}")
-
-        msg = ''
-        for num, brief in enumerate(all_briefs, start=1):
-            msg += f"{num}. {brief}"
-
-        return msg
-
-
-    except HttpError as err:
-        print(err)
-        return str("Бот приболел. Немедленно сообщите об этом Лехе!")
+    return msg
 
 
 def stats_for_month(month):
-    SAMPLE_RANGE_NAME = f"{month}!A2:I"
-    try:
-        service = build("sheets", "v4", credentials=creds)
+    values = get_data_from_sheet(month)
+    if not values:
+        return
 
-        sheet = service.spreadsheets()
-        result = (
-            sheet.values()
-            .get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=SAMPLE_RANGE_NAME)
-            .execute()
-        )
-        values = result.get("values", [])
+    done, in_work, all_texts, seo, simple, review, test = 0, 0, 0, 0, 0, 0, 0
+    deadline_today = ''
+    for row in values:
+        try:
+            title = row[0]
+            link = row[1]
+            brief = row[3]
+            type = row[5]
+            deadline = row[7]
+            author = row[2]
 
-        if not values:
-            print("No data found.")
-            return
+            seo += 1 if type == 'СЕО' else 0
+            simple += 1 if type == 'Простая' or row[5] == 'Новость' else 0
+            review += 1 if type == 'Обзор' else 0
+            test += 1 if type == 'Тест' else 0
 
-        done, in_work, all_texts, seo, simple, review, test = 0, 0, 0, 0, 0, 0, 0
-        deadline_today = ''
-        for row in values:
-            try:
-                title = row[0]
-                link = row[1]
-                brief = row[3]
-                type = row[5]
-                deadline = row[7]
-                author = row[2]
+            if title and brief:
+                all_texts += 1
 
-                seo += 1 if type == 'СЕО' else 0
-                simple += 1 if type == 'Простая' or row[5] == 'Новость' else 0
-                review += 1 if type == 'Обзор' else 0
-                test += 1 if type == 'Тест' else 0
+                if link:
+                    done += 1
+                else:
+                    in_work += 1
 
-                if title and brief:
-                    all_texts += 1
+            if deadline and title and brief:
+                deadline_today += f"{title} — {author} — {deadline}\n"
+        except:
+            pass
 
-                    if link:
-                        done += 1
-                    else:
-                        in_work += 1
-
-                if deadline and title and brief:
-                    deadline_today += f"{title} — {author} — {deadline}\n"
-            except:
-                pass
-
-        msg = f'Всего текстов за месяц: {all_texts}\n' \
-              f'Уже готовы: {done}\n' \
-              f'Сейчас в работе: {in_work}\n\n' \
-              f'Простых — {simple} шт\n' \
-              f'СЕО — {seo} шт\n' \
-              f'Тестов — {test}\n' \
-              f'Обзоров — {review}\n\n\n' \
-              f'Дедлайны: {deadline_today}'
-        return msg
-
-    except HttpError as err:
-        print(err)
-        return str("Что-то неправильно ввели. Делайте нормально!")
+    msg = f'Всего текстов за месяц: {all_texts}\n' \
+          f'Уже готовы: {done}\n' \
+          f'Сейчас в работе: {in_work}\n\n' \
+          f'Простых — {simple} шт\n' \
+          f'СЕО — {seo} шт\n' \
+          f'Тестов — {test}\n' \
+          f'Обзоров — {review}\n\n\n'
+    return msg
 
 
 def in_work_today():
-    SAMPLE_RANGE_NAME = f"{current_month()}!A2:I"
+    values = get_data_from_sheet(current_month())
+    if not values:
+        return
     today, tomorrow = current_day()
-    try:
-        service = build("sheets", "v4", credentials=creds)
 
-        sheet = service.spreadsheets()
-        result = (
-            sheet.values()
-            .get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=SAMPLE_RANGE_NAME)
-            .execute()
-        )
-        values = result.get("values", [])
+    done, in_work, all_texts = 0, 0, 0
+    deadline_today = ''
+    deadline_tomorrow = ''
+    for row in values:
+        try:
+            title = row[0]
+            link = row[1]
+            brief = row[3]
+            deadline = row[7]
+            author = row[2]
 
-        if not values:
-            print("No data found.")
-            return
+            if title and brief and title != "Тема текста" and title != "МВИДЕО":
+                all_texts += 1
 
-        done, in_work, all_texts = 0, 0, 0
-        deadline_today = ''
-        deadline_tomorrow = ''
-        for row in values:
-            try:
-                title = row[0]
-                link = row[1]
-                brief = row[3]
-                deadline = row[7]
-                author = row[2]
+                if link:
+                    done += 1
+                else:
+                    in_work += 1
 
-                if title and brief and title != "Тема текста" and title != "МВИДЕО":
-                    all_texts += 1
+            if deadline and title and brief and not link:
+                if deadline == today:
+                    deadline_today += f"- <a href='{brief}'>{title}</a> — {author} {find_author(author)[0]}\n"
+                if deadline == tomorrow:
+                    deadline_tomorrow += f"- <a href='{brief}'>{title}</a> — {author} {find_author(author)[0]}\n"
+        except:
+            pass
 
-                    if link:
-                        done += 1
-                    else:
-                        in_work += 1
-
-                if deadline and title and brief and not link:
-                    if deadline == today:
-                        deadline_today += f"- <a href='{brief}'>{title}</a> — {author} {find_author(author)[0]}\n"
-                    if deadline == tomorrow:
-                        deadline_tomorrow += f"- <a href='{brief}'>{title}</a> — {author} {find_author(author)[0]}\n"
-            except:
-                pass
-
-        msg = f'Всего текстов за месяц: {all_texts}\n' \
-              f'Уже готовы: {done}\n' \
-              f'Сейчас в работе: {in_work}\n\n' \
-              f'<b>Сегодня должны сдать:</b> \n{deadline_today}\n\n' \
-              f'<b>Завтра должны сдать:</b> \n{deadline_tomorrow}\n\n'
-        return msg
-
-
-    except HttpError as err:
-        print(err)
-        return str("Что-то неправильно ввели. Делайте нормально!")
-
+    msg = f'Всего текстов за месяц: {all_texts}\n' \
+          f'Уже готовы: {done}\n' \
+          f'Сейчас в работе: {in_work}\n\n' \
+          f'<b>Сегодня должны сдать:</b> \n{deadline_today}\n\n' \
+          f'<b>Завтра должны сдать:</b> \n{deadline_tomorrow}\n\n'
+    return msg
 
 
 def all_texts_of_author(name):
@@ -349,45 +267,28 @@ def all_texts_of_author(name):
     recording_mvideo = False
 
     for month in all_months:
-        SAMPLE_RANGE_NAME = f"{month}!A2:G"
+        values = get_data_from_sheet(month)
+        if not values:
+            return
 
-        try:
-            service = build("sheets", "v4", credentials=creds)
+        msg_texts_eldo = ''
+        msg_texts_mvideo = ''
+        for row in values:
+            if 'МВИДЕО' in str(row):
+                recording_mvideo = True
+            try:
+                title = f"{row[0]} — {row[1]}"
+                link = row[1]
+                if name == row[2] and link:
+                    if recording_mvideo:
+                        msg_texts_mvideo += f"\n{title}\n"
+                    else:
+                        msg_texts_eldo += f"\n{title}\n"
+            except:
+                pass
 
-            sheet = service.spreadsheets()
-            result = (
-                sheet.values()
-                .get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=SAMPLE_RANGE_NAME)
-                .execute()
-            )
-            values = result.get("values", [])
-
-            if not values:
-                print("No data found.")
-                return
-
-            msg_texts_eldo = ''
-            msg_texts_mvideo = ''
-            for row in values:
-                if 'МВИДЕО' in str(row):
-                    recording_mvideo = True
-                try:
-                    title = f"{row[0]} — {row[1]}"
-                    link = row[1]
-                    if name == row[2] and link:
-                        if recording_mvideo:
-                            msg_texts_mvideo += f"\n{title}\n"
-                        else:
-                            msg_texts_eldo += f"\n{title}\n"
-                except:
-                    pass
-
-            temp_eldo += msg_texts_eldo
-            temp_mvideo += msg_texts_mvideo
-
-        except HttpError as err:
-            print(err)
-            return str("Что-то неправильно вводишь!")
+        temp_eldo += msg_texts_eldo
+        temp_mvideo += msg_texts_mvideo
 
         recording_mvideo = False
 
