@@ -84,7 +84,8 @@ def refresh_db():
         ('Ксения Седна', '@Sedn04ka', 'Седна'),
         ('Никита Баранов', '@Hurtson', 'Никита'),
         ('Дмитрий Корниенко', '@dimkor42', 'Дима'),
-        ('Дарья', '@drrmmn', 'Дарья'),
+        ('Дарья Роман', '@drrmmn', 'Дарья'),
+        ('Роман Шумялов', '@marabouto', 'Рома'),
     ]
 
     cursor.executemany(insert_data_sql, authors_data)

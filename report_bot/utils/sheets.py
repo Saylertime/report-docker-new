@@ -261,7 +261,7 @@ def in_work_today():
 
 
 def all_texts_of_author(name):
-    all_months = ["Ноябрь 2023", "Декабрь 2023", "Январь 2024", "Февраль 2024"]
+    all_months = ["Ноябрь 2023", "Декабрь 2023", "Январь 2024", "Февраль 2024", "Март 2024"]
     temp_eldo = ""
     temp_mvideo = ""
     recording_mvideo = False
