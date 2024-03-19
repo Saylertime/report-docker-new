@@ -8,3 +8,4 @@ class OverallState(StatesGroup):
     new_author = State()
     stats = State()
     all_texts = State()
+    notifications = State()

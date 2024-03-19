@@ -27,3 +27,5 @@
 #     chatgpt_reply = response.json()['choices'][0]['text'].strip()
 #
 #     bot.send_message(message.chat.id, chatgpt_reply)
+
+
