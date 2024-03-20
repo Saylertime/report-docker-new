@@ -85,17 +85,22 @@ def rep_name_and_month(name, month='Январь 2024'):
 
     dct = dict()
     dct_texts = dict()
+    texts_in_work = dict()
+    texts_in_work[name] = []
     for row in values:
         try:
             title = f"{row[0]} — {row[6]} руб. {row[1]}"
             money = int(row[6])
             link = row[1]
+            brief = str(row[3])
             if name == row[2]:
                 if (name in dct or name in dct_texts):
                     if link:
                         value_money, current_count = dct[name]
                         dct_texts[name].append(title)
                         dct[name] = (value_money + money, current_count + 1)
+                    else:
+                        texts_in_work[name].append((title, brief))
                 else:
                     dct[name] = (money, 1)
                     dct_texts[name] = [title]
@@ -104,12 +109,17 @@ def rep_name_and_month(name, month='Январь 2024'):
     msg = ''
     sorted_dct = sorted(dct.items(), key=lambda item: item[1][0], reverse=True)
     for author, summa in sorted_dct:
-        msg += f"Гонорар за {month} — {summa[0]} руб.\nТекстов за месяц — {summa[1]}\n\nВсе тексты: \n"
+        msg += f"Гонорар за сданные тексты за {month} — {summa[0]} руб.\nТекстов за месяц — {summa[1]}\n\n"
 
-    msg_texts = ''
+    msg_texts = '<b>Все сданные тексты:</b> \n'
     for title in dct_texts[name]:
         msg_texts += f"\n— {title}\n"
     msg += msg_texts
+
+    msg_texts_in_work = '\n\n<b>Тексты в работе: </b>\n'
+    for title in texts_in_work[name]:
+        msg_texts_in_work += f"\n— <a href='{title[1]}'>{title[0]}</a>\n"
+    msg += msg_texts_in_work
     return msg
 
 

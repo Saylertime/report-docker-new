@@ -16,7 +16,7 @@ def answer(message):
         name = split_message[0]
         current_month = split_message[1]
         msg = rep_name_and_month(name=name, month=current_month)
-        bot.send_message(message.chat.id, msg)
+        bot.send_message(message.chat.id, msg, parse_mode='HTML')
     except:
         bot.send_message(message.chat.id, 'Введи нормально :(')
     finally:
