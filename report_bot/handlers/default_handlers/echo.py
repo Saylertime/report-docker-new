@@ -1,6 +1,7 @@
 from telebot.types import Message
 from loader import bot
 from pg_maker import refresh_db, delete_author, new_table
+from utils.text_ru import text_unique_check
 
 @bot.message_handler(state=None)
 def bot_echo(message: Message) -> None:
@@ -24,6 +25,10 @@ def bot_echo(message: Message) -> None:
                 bot.send_message(message.chat.id, f"Такого нет. Может, мы его выперли уже давно?")
         except:
             bot.send_message(message.chat.id, f"Такого нет. Может, мы его выперли уже давно?")
+
+    elif "TEXT" in message.text:
+        left_symbs = text_unique_check()
+        bot.send_message(message.chat.id, f"{left_symbs}")
 
     else:
         bot.reply_to(

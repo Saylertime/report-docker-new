@@ -9,9 +9,6 @@ user = config.DB_USER
 password = config.DB_PASSWORD
 host = config.DB_HOST
 
-today, tomorrow = current_day()
-desired_timezone = pytz.timezone('Europe/Moscow')
-
 def connect_to_db():
     conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
     cursor = conn.cursor()
@@ -144,6 +141,8 @@ def find_notifications(user_id):
     return notifications
 
 def find_for_tasks():
+    desired_timezone = pytz.timezone('Europe/Moscow')
+    today, tomorrow = current_day()
     conn, cursor = connect_to_db()
     sql = """
         SELECT user_id, n_time, text
