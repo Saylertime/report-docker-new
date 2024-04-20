@@ -12,12 +12,8 @@ def scheduled_job():
         time.sleep(60)
 
 if __name__ == "__main__":
-    try:
-        bot.add_custom_filter(StateFilter(bot))
-        set_default_commands(bot)
-        thread = threading.Thread(target=scheduled_job)
-        thread.start()
-        bot.polling()
-    except Exception as e:
-        time.sleep(3)
-        print(e)
+    bot.add_custom_filter(StateFilter(bot))
+    set_default_commands(bot)
+    thread = threading.Thread(target=scheduled_job)
+    thread.start()
+    bot.polling()
