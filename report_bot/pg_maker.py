@@ -141,6 +141,7 @@ def find_notifications(user_id):
     return notifications
 
 def find_for_tasks():
+    new_table()
     desired_timezone = pytz.timezone('Europe/Moscow')
     today, tomorrow = current_day()
     conn, cursor = connect_to_db()
